@@ -1,0 +1,13 @@
+{
+  "name": "@zsign/convex-example",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@zsign/convex": "file:..",
+    "convex": "^1.24.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0"
+  }
+}

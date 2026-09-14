@@ -1,0 +1,7 @@
+node_modules/
+dist/
+example/convex/_generated/
+.env
+.env.*
+!.env.example
+.DS_Store

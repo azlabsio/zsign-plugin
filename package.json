@@ -1,0 +1,59 @@
+{
+  "name": "@zsign/convex",
+  "version": "0.1.1",
+  "description": "zSign e-signature component for Convex — send documents, watch signing status reactively, and fetch signed artifacts.",
+  "license": "MIT",
+  "keywords": [
+    "convex",
+    "convex-component",
+    "e-signature",
+    "esignature",
+    "zsign",
+    "document-signing"
+  ],
+  "homepage": "https://zsign.io/docs", "//": "pragma: allowlist secret",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/azlabsio/zsign-plugin.git"
+  },
+  "bugs": {
+    "url": "https://github.com/azlabsio/zsign-plugin/issues"
+  },
+  "workspaces": [
+    "example"
+  ],
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/client/index.ts",
+    "./convex.config.js": "./src/component/convex.config.ts",
+    "./_generated/component.js": "./src/component/_generated/component.ts",
+    "./test": "./src/test.ts"
+  },
+  "files": [
+    "src",
+    "docs",
+    "SKILL.md",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "convex": "^1.24.0"
+  },
+  "devDependencies": {
+    "@edge-runtime/vm": "^3.2.0",
+    "convex": "^1.24.0",
+    "convex-test": "^0.0.58",
+    "typescript": "^5.8.0",
+    "vitest": "^3.0.0"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  }
+}
