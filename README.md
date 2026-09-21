@@ -34,7 +34,8 @@ export default app;
 ## Env (component, declared in convex.config.ts)
 
 - `ZSIGN_API_KEY` (required) — `zs_live_…`/`zs_test_…` org key.
-- `ZSIGN_API_BASE_URL` (optional) — defaults to `https://api.zsign.io`.
+- `ZSIGN_API_BASE_URL` (optional) — defaults to `https://zsign.io`. An origin;
+  a trailing `/api` or `/api/v1` (as the zSign API docs write it) is stripped.
 - `ZSIGN_WEBHOOK_SECRET` (optional) — `whsec_…`; required to verify webhook
   signatures.
 - `ZSIGN_WEBHOOK_SECRET_PREVIOUS` (optional) — previous `whsec_…`, accepted in

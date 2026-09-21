@@ -1,6 +1,6 @@
 {
   "name": "@zsign/convex",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "zSign e-signature component for Convex — send documents, watch signing status reactively, and fetch signed artifacts.",
   "license": "MIT",
   "keywords": [
@@ -11,7 +11,8 @@
     "zsign",
     "document-signing"
   ],
-  "homepage": "https://zsign.io/docs", "//": "pragma: allowlist secret",
+  "homepage": "https://zsign.io/docs",
+  "//": "pragma: allowlist secret",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/azlabsio/zsign-plugin.git"

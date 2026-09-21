@@ -1,7 +1,15 @@
 # Changelog
 
-## Unreleased
+## 0.1.2 — 2026-09-21
 
+- Fix: the default API base URL was `https://api.zsign.io`, a host that does
+  not resolve, so every call failed with `fetch failed` unless
+  `ZSIGN_API_BASE_URL` was set. The default is now `https://zsign.io`.
+- `ZSIGN_API_BASE_URL` now tolerates the form the zSign API docs use: a
+  trailing `/`, `/api`, or `/api/v1` is stripped. Previously
+  `https://zsign.io/api` produced `/api/api/v1/...` and a 404.
+- `send` reported `zsign.component_version` as `0.1.0` in 0.1.1; it now
+  reports the package version.
 - Every component function now declares a `returns` validator (Convex
   Components Directory advisory). Table field validators moved to
   `src/component/validators.ts` so `schema.ts` and the `returns` shapes share

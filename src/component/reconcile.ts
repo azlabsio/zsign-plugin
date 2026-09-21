@@ -1,9 +1,9 @@
 import { v } from "convex/values";
 import { internalAction, action, env } from "./_generated/server.js";
 import { api, internal } from "./_generated/api.js";
+import { resolveBaseUrl } from "./baseUrl.js";
 import type { Id } from "./_generated/dataModel.js";
 
-const DEFAULT_BASE_URL = "https://api.zsign.io";
 const MAX_ATTEMPTS = 6;
 const BACKOFF_MS = [0, 5_000, 30_000, 120_000, 600_000, 1_800_000];
 
@@ -56,7 +56,7 @@ export const refreshEnvelope = internalAction({
     }
 
     const generation = envelope.generation;
-    const baseUrl = env.ZSIGN_API_BASE_URL ?? DEFAULT_BASE_URL;
+    const baseUrl = resolveBaseUrl(env.ZSIGN_API_BASE_URL);
 
     try {
       const res = await fetch(

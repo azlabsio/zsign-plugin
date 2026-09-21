@@ -126,7 +126,7 @@ Internal (scheduler/self): `lib.allocateOperation`, `lib.markSendFailed`,
 | Var | Required | Notes |
 |---|---|---|
 | `ZSIGN_API_KEY` | yes | `zs_live_…`/`zs_test_…` org API key |
-| `ZSIGN_API_BASE_URL` | no | defaults `https://api.zsign.io` |
+| `ZSIGN_API_BASE_URL` | no | defaults `https://zsign.io`; a trailing `/api` or `/api/v1` is stripped |
 | `ZSIGN_WEBHOOK_SECRET` | for webhooks | `whsec_…`; without it signature verification can't run |
 | `ZSIGN_WEBHOOK_SECRET_PREVIOUS` | no | rotation: both secrets accepted until cutover |
 

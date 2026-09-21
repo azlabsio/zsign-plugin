@@ -1,10 +1,10 @@
 import { v } from "convex/values";
 import { action, env } from "./_generated/server.js";
 import { api, internal } from "./_generated/api.js";
+import { resolveBaseUrl } from "./baseUrl.js";
 import type { Id } from "./_generated/dataModel.js";
 
-const DEFAULT_BASE_URL = "https://api.zsign.io";
-const COMPONENT_VERSION = "0.1.0";
+const COMPONENT_VERSION = "0.1.2";
 
 export const send = action({
   args: {
@@ -68,7 +68,7 @@ export const send = action({
       }
     }
 
-    const baseUrl = env.ZSIGN_API_BASE_URL ?? DEFAULT_BASE_URL;
+    const baseUrl = resolveBaseUrl(env.ZSIGN_API_BASE_URL);
     const apiKey = env.ZSIGN_API_KEY;
 
     // The Convex runtime's FormData drops the file MIME type and zSign
@@ -206,7 +206,7 @@ export const getSignedPdf = action({
   handler: async (ctx, args) =>
     fetchArtifact(
       env.ZSIGN_API_KEY,
-      env.ZSIGN_API_BASE_URL ?? DEFAULT_BASE_URL,
+      resolveBaseUrl(env.ZSIGN_API_BASE_URL),
       `/api/v1/documents/${args.completedDocumentId}/download`,
     ),
 });
@@ -217,7 +217,7 @@ export const getCertificate = action({
   handler: async (ctx, args) =>
     fetchArtifact(
       env.ZSIGN_API_KEY,
-      env.ZSIGN_API_BASE_URL ?? DEFAULT_BASE_URL,
+      resolveBaseUrl(env.ZSIGN_API_BASE_URL),
       `/api/v1/documents/${args.documentId}/certificate`,
     ),
 });
