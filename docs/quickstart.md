@@ -35,7 +35,7 @@ export default app;
 ```bash
 npx convex env set ZSIGN_API_KEY zs_live_...
 npx convex env set ZSIGN_WEBHOOK_SECRET whsec_...
-# ZSIGN_API_BASE_URL is optional; defaults to https://api.zsign.io
+# ZSIGN_API_BASE_URL is optional; defaults to https://zsign.io
 npx convex dev   # once, to generate bindings
 ```
 
