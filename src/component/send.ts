@@ -1,6 +1,7 @@
 import { v } from "convex/values";
 import { action, env } from "./_generated/server.js";
 import { api, internal } from "./_generated/api.js";
+import type { Id } from "./_generated/dataModel.js";
 
 const DEFAULT_BASE_URL = "https://api.zsign.io";
 const COMPONENT_VERSION = "0.1.0";
@@ -23,13 +24,20 @@ export const send = action({
     sendInvite: v.optional(v.boolean()),
     sendCompletionEmail: v.optional(v.boolean()),
   },
+  returns: v.object({
+    envelopeId: v.id("envelopes"),
+    documentId: v.string(),
+    sessionId: v.string(),
+    signingUrls: v.optional(v.any()),
+    replayed: v.boolean(),
+  }),
   // Explicit: the handler calls back into internal.lib / api.lib, and
   // inferring it would make the component's own api type reference itself.
   handler: async (
     ctx,
     args,
   ): Promise<{
-    envelopeId: string;
+    envelopeId: Id<"envelopes">;
     documentId: string;
     sessionId: string;
     signingUrls: unknown;
@@ -194,6 +202,7 @@ async function fetchArtifact(
 
 export const getSignedPdf = action({
   args: { completedDocumentId: v.string() },
+  returns: v.bytes(),
   handler: async (ctx, args) =>
     fetchArtifact(
       env.ZSIGN_API_KEY,
@@ -204,6 +213,7 @@ export const getSignedPdf = action({
 
 export const getCertificate = action({
   args: { documentId: v.string() },
+  returns: v.bytes(),
   handler: async (ctx, args) =>
     fetchArtifact(
       env.ZSIGN_API_KEY,

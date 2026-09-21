@@ -8,13 +8,12 @@ import {
 import { internal } from "./_generated/api.js";
 import type { Doc, Id } from "./_generated/dataModel.js";
 import type { MutationCtx } from "./_generated/server.js";
-
-const recipientValidator = v.object({
-  email: v.string(),
-  name: v.string(),
-  status: v.string(),
-  signedAt: v.optional(v.number()),
-});
+import {
+  callbackDoc,
+  envelopeDoc,
+  operationDoc,
+  recipientValidator,
+} from "./validators.js";
 
 const TERMINAL = new Set(["completed", "declined", "voided", "expired"]);
 
@@ -49,6 +48,7 @@ const STATUS_RANK: Record<string, number> = {
 
 export const allocateOperation = internalMutation({
   args: { operationId: v.string() },
+  returns: operationDoc,
   handler: async (ctx, args) => {
     const existing = await ctx.db
       .query("operations")
@@ -70,6 +70,7 @@ export const allocateOperation = internalMutation({
 
 export const markSendFailed = internalMutation({
   args: { operationId: v.string(), error: v.string() },
+  returns: v.null(),
   handler: async (ctx, args) => {
     const op = await ctx.db
       .query("operations")
@@ -77,17 +78,19 @@ export const markSendFailed = internalMutation({
         q.eq("operationId", args.operationId),
       )
       .unique();
-    if (!op || op.status === "sent") return;
+    if (!op || op.status === "sent") return null;
     await ctx.db.patch(op._id, {
       status: "failed",
       error: args.error.slice(0, 1000),
       updatedAt: Date.now(),
     });
+    return null;
   },
 });
 
 export const getOperation = query({
   args: { operationId: v.string() },
+  returns: v.union(operationDoc, v.null()),
   handler: async (ctx, args) =>
     ctx.db
       .query("operations")
@@ -205,6 +208,7 @@ export const insertEnvelope = internalMutation({
     metadata: v.optional(v.record(v.string(), v.string())),
     signingUrls: v.optional(v.any()),
   },
+  returns: v.id("envelopes"),
   handler: async (ctx, args) => {
     const existing = await ctx.db
       .query("envelopes")
@@ -267,7 +271,18 @@ export const applyWebhookEvent = mutation({
     completedAt: v.optional(v.string()),
     metadata: v.optional(v.any()),
   },
-  handler: async (ctx, args): Promise<{ outcome: string }> => {
+  returns: v.object({
+    outcome: v.union(
+      v.literal("applied"),
+      v.literal("conflict"),
+      v.literal("duplicate"),
+      v.literal("orphaned"),
+    ),
+  }),
+  handler: async (
+    ctx,
+    args,
+  ): Promise<{ outcome: "applied" | "conflict" | "duplicate" | "orphaned" }> => {
     const seen = await ctx.db
       .query("events")
       .withIndex("by_event_id", (q) => q.eq("eventId", args.eventId))
@@ -328,6 +343,7 @@ export const applyCanonicalState = internalMutation({
     completedDocumentId: v.optional(v.string()),
     completedAt: v.optional(v.number()),
   },
+  returns: v.object({ applied: v.boolean() }),
   handler: async (ctx, args): Promise<{ applied: boolean }> => {
     const envelope = await ctx.db.get(args.envelopeId);
     if (!envelope) return { applied: false };
@@ -363,16 +379,19 @@ export const applyCanonicalState = internalMutation({
 
 export const markSyncError = internalMutation({
   args: { envelopeId: v.id("envelopes"), error: v.string() },
+  returns: v.null(),
   handler: async (ctx, args) => {
     await ctx.db.patch(args.envelopeId, {
       syncError: args.error.slice(0, 1000),
       updatedAt: Date.now(),
     });
+    return null;
   },
 });
 
 export const getEnvelopeInternal = internalQuery({
   args: { envelopeId: v.id("envelopes") },
+  returns: v.union(envelopeDoc, v.null()),
   handler: async (ctx, args) => ctx.db.get(args.envelopeId),
 });
 
@@ -382,6 +401,7 @@ export const getEnvelopeInternal = internalQuery({
 
 export const pendingCallbacks = query({
   args: { limit: v.optional(v.number()) },
+  returns: v.array(callbackDoc),
   handler: async (ctx, args) => {
     const pending = await ctx.db
       .query("callbacks")
@@ -399,6 +419,19 @@ export const pendingCallbacks = query({
 
 export const callbackEnvelope = query({
   args: { callbackId: v.id("callbacks") },
+  returns: v.union(
+    v.object({
+      callbackId: v.id("callbacks"),
+      kind: v.string(),
+      attempts: v.number(),
+      documentId: v.string(),
+      sessionId: v.string(),
+      operationId: v.string(),
+      completedDocumentId: v.optional(v.string()),
+      metadata: v.optional(v.record(v.string(), v.string())),
+    }),
+    v.null(),
+  ),
   handler: async (ctx, args) => {
     const cb = await ctx.db.get(args.callbackId);
     if (!cb) return null;
@@ -423,15 +456,17 @@ export const finishCallback = mutation({
     ok: v.boolean(),
     error: v.optional(v.string()),
   },
+  returns: v.null(),
   handler: async (ctx, args) => {
     const cb = await ctx.db.get(args.callbackId);
-    if (!cb) return;
+    if (!cb) return null;
     await ctx.db.patch(cb._id, {
       status: args.ok ? "succeeded" : "failed",
       attempts: cb.attempts + 1,
       lastError: args.ok ? undefined : args.error?.slice(0, 1000),
       updatedAt: Date.now(),
     });
+    return null;
   },
 });
 
@@ -441,6 +476,7 @@ export const finishCallback = mutation({
 
 export const getByOperation = query({
   args: { operationId: v.string() },
+  returns: v.union(envelopeDoc, v.null()),
   handler: async (ctx, args) =>
     ctx.db
       .query("envelopes")
@@ -452,6 +488,7 @@ export const getByOperation = query({
 
 export const getBySession = query({
   args: { sessionId: v.string() },
+  returns: v.union(envelopeDoc, v.null()),
   handler: async (ctx, args) =>
     ctx.db
       .query("envelopes")
@@ -461,6 +498,7 @@ export const getBySession = query({
 
 export const list = query({
   args: { activeOnly: v.optional(v.boolean()) },
+  returns: v.array(envelopeDoc),
   handler: async (ctx, args) => {
     if (args.activeOnly) {
       return ctx.db

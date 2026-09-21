@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- Every component function now declares a `returns` validator (Convex
+  Components Directory advisory). Table field validators moved to
+  `src/component/validators.ts` so `schema.ts` and the `returns` shapes share
+  one definition. `send` now returns `envelopeId` typed as `Id<"envelopes">`
+  (still assignable to `string`); `applyWebhookEvent.outcome` is the literal
+  union `"applied" | "conflict" | "duplicate" | "orphaned"`. No runtime
+  behaviour change.
+
 ## 0.1.1 — 2026-09-14
 
 - Export `./_generated/component.js` so consumers can import `ComponentApi`

@@ -27,6 +27,15 @@ function canonicalEnvelopeStatus(body: CanonicalStatus): string {
   return body.session?.status ?? body.status;
 }
 
+// Outcome of one canonical fetch: `applied` mirrors applyCanonicalState,
+// `retry` means another attempt was scheduled, `done` means nothing further
+// will run for this envelope.
+const refreshResult = v.object({
+  applied: v.optional(v.boolean()),
+  retry: v.optional(v.boolean()),
+  done: v.optional(v.boolean()),
+});
+
 export const refreshEnvelope = internalAction({
   args: {
     envelopeId: v.id("envelopes"),
@@ -35,6 +44,7 @@ export const refreshEnvelope = internalAction({
     // the routine terminal short-circuit.
     allowTerminal: v.optional(v.boolean()),
   },
+  returns: refreshResult,
   handler: async (ctx, args): Promise<{ applied?: boolean; retry?: boolean; done?: boolean }> => {
     const attempt = args.attempt ?? 0;
     const envelope = await ctx.runQuery(internal.lib.getEnvelopeInternal, {
@@ -118,6 +128,13 @@ export const refreshEnvelope = internalAction({
 // App-facing manual refresh: `zsign.refresh(ctx, operationId)` calls this.
 export const refresh = action({
   args: { operationId: v.string() },
+  returns: v.object({
+    found: v.boolean(),
+    operation: v.optional(v.union(v.string(), v.null())),
+    status: v.optional(v.string()),
+    terminal: v.optional(v.boolean()),
+    ...refreshResult.fields,
+  }),
   // Explicit: returning a runAction of an internal function in this same file
   // would make the generated api type circular.
   handler: async (
