@@ -63,9 +63,9 @@ async function requestedOrigin(
 }
 
 describe("ZSIGN_API_BASE_URL resolution", () => {
-  // The public docs give the base URL as https://zsign.io/api (and llms.txt
-  // as https://zsign.io/api/v1); the component appends /api/v1/... itself, so
-  // those forms must not produce /api/api/v1/.
+  // The zSign API reference page gave the base URL as https://zsign.io/api;
+  // the component appends /api/v1/... itself, so a base that already carries
+  // /api or /api/v1 must not produce /api/api/v1/.
   const cases: [string | undefined, string][] = [
     [undefined, "https://zsign.io"],
     ["https://zsign.io/api", "https://zsign.io"],
