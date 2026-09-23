@@ -1,5 +1,7 @@
 # @zsign/convex
 
+[![Convex Component](https://www.convex.dev/components/badge/zsign/convex)](https://www.convex.dev/components/zsign/convex)
+
 zSign e-signature component for Convex. An app installs this component to send a
 document for signature, observe envelope progress reactively, run completion
 callbacks, and retrieve the signed PDF + completion certificate when done.
