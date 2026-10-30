@@ -202,3 +202,21 @@ package (`files` limits the tarball to `src/`, `docs/`, `SKILL.md`,
 
 Prepaid credits, no seats: Starter $27/50 · Growth $87/250 · Scale $297/1000 ·
 White-label $49/mo.
+
+## MCP directory manifest
+
+`lhm.plugin.json` lists the remote zsign MCP server (`https://zsign.io/mcp`) on
+[LobeHub MCP](https://lobehub.com/mcp). Its `tools` array is the live catalog,
+captured from the public inspection endpoint because `/mcp` itself needs OAuth:
+
+```bash
+mkdir -p /tmp/lhm && echo '{"description":"zsign"}' > /tmp/lhm/package.json
+npx @lobehub/market-cli plugin init --url https://zsign.io/mcp/open --dir /tmp/lhm
+```
+
+(`init` needs a description from the server or a `package.json`, and refuses
+to overwrite an existing manifest, so it runs in a scratch directory.)
+
+Copy the generated `tools` into `lhm.plugin.json`, keep `cloudEndpoint` at
+`https://zsign.io/mcp`, and run `npm test`. After the first `lhm plugin publish`,
+`lhm plugin update` pushes later edits.

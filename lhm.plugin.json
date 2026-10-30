@@ -1,0 +1,1598 @@
+{
+  "identifier": "zsign",
+  "name": "zsign",
+  "version": "1.0.3",
+  "description": "Send documents for e-signature from AI assistants, track signers, and download sealed, signed PDFs.",
+  "author": "azlabs",
+  "authorUrl": "https://azlabs.io",
+  "homepage": "https://zsign.io/docs/mcp",
+  "icon": "https://zsign.io/favicon.svg",
+  "category": "productivity",
+  "tags": [
+    "e-signature",
+    "esignature",
+    "document-signing",
+    "pdf",
+    "contracts",
+    "mcp"
+  ],
+  "cloudEndpoint": "https://zsign.io/mcp",
+  "tools": [
+    {
+      "name": "create_account",
+      "title": "Create Account",
+      "description": "Create a zSign account and API key in one call. Email is optional.\n    The returned key starts with zs_live_; pass it as\n    `Authorization: Bearer <key>` on this MCP connection (or REST) for all\n    other tools. Unverified accounts stay at 0 credits (anonymous-abuse\n    guard). Pass an email, then POST /api/v1/email/verify with the mailed\n    token (or click the link) to receive the same starting credits as a\n    dashboard signup. After that, send_envelope works; buy_credits when you\n    need more.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Email"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Name"
+          }
+        },
+        "title": "create_accountArguments"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "create_accountOutput"
+      },
+      "annotations": {
+        "title": "Create Account",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false
+      }
+    },
+    {
+      "name": "get_pricing",
+      "title": "Get Pricing",
+      "description": "Credit packs and billing model (1 credit = 1 envelope send). No\n    authentication required.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "title": "get_pricingArguments"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "get_pricingOutput"
+      },
+      "annotations": {
+        "title": "Get Pricing",
+        "readOnlyHint": true,
+        "idempotentHint": true
+      }
+    },
+    {
+      "name": "get_account",
+      "title": "Get Account",
+      "description": "Connected account: email, email_verified, name, organization id and\n    name, and the credit balance from the same ledger as check_balance.\n    auth.method is api_key or oauth, plus the scopes this call holds. An\n    API key response includes key_prefix (the stored non-secret prefix)\n    and never the key. OAuth responses set key_prefix to null and never\n    return the token. Read-only, no credit charge. Accepts envelopes:read\n    or credits:read. Requires `Authorization: Bearer zs_...`.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "title": "get_accountArguments"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "get_accountOutput"
+      },
+      "annotations": {
+        "title": "Get Account",
+        "readOnlyHint": true,
+        "idempotentHint": true
+      }
+    },
+    {
+      "name": "check_balance",
+      "title": "Check Credit Balance",
+      "description": "Current credit balance and available packs. Requires\n    `Authorization: Bearer zs_...`.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "title": "check_balanceArguments"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "check_balanceOutput"
+      },
+      "annotations": {
+        "title": "Check Credit Balance",
+        "readOnlyHint": true,
+        "idempotentHint": true
+      }
+    },
+    {
+      "name": "get_usage",
+      "title": "Get Usage",
+      "description": "Daily credit-consumption report. start_date and end_date are\n    inclusive UTC dates (YYYY-MM-DD). Returns 400 when\n    (end_date - start_date).days >= 400. Rows are only days with an\n    envelope debit, refund, or void_refund. Requires\n    `Authorization: Bearer zs_...`.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "start_date": {
+            "title": "Start Date",
+            "type": "string"
+          },
+          "end_date": {
+            "title": "End Date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "start_date",
+          "end_date"
+        ],
+        "title": "get_usageArguments"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "get_usageOutput"
+      },
+      "annotations": {
+        "title": "Get Usage",
+        "readOnlyHint": true,
+        "idempotentHint": true
+      }
+    },
+    {
+      "name": "get_referral_link",
+      "title": "Get Referral Link",
+      "description": "This account's referral code and shareable referral link. Requires\n    `Authorization: Bearer zs_...`.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "title": "get_referral_linkArguments"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "get_referral_linkOutput"
+      },
+      "annotations": {
+        "title": "Get Referral Link",
+        "readOnlyHint": true,
+        "idempotentHint": true
+      }
+    },
+    {
+      "name": "buy_credits",
+      "title": "Buy Credits",
+      "description": "Create a Stripe Checkout session for a credit pack ('starter',\n    'growth', or 'scale' — see get_pricing). Returns a checkout_url: open\n    and pay it (card), and the webhook credits this account automatically\n    within seconds. Requires `Authorization: Bearer zs_...`.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "pack": {
+            "title": "Pack",
+            "type": "string"
+          }
+        },
+        "required": [
+          "pack"
+        ],
+        "title": "buy_creditsArguments"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "buy_creditsOutput"
+      },
+      "annotations": {
+        "title": "Buy Credits",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false
+      }
+    },
+    {
+      "name": "send_envelope",
+      "title": "Send Envelope for Signature",
+      "description": "Send a PDF for legally binding signature, or leave it as a Draft for a human to approve. Immediate send costs 1 credit. Provide the PDF either as document_base64 OR as a public https document_url (max 10MB). recipients = [{\"name\": \"...\", \"email\": \"...\", \"role\": \"signer\"}]. Each recipient gets a signing email; poll get_envelope_status for progress. Requires `Authorization: Bearer zs_...`.\n\nauto_send defaults true (existing one-tool send). Set auto_send=false or draft=true to create a Draft: status Draft, no credit debit, no invite emails. draft=true always wins if both flags are set. Then a human Approves/Sends in the dashboard, or call send_draft.\n\nImmediate send: the PDF is REJECTED unless it contains signing-field placeholder tags. For an untagged PDF (no zSign field tags), call prepare_document first to place the fields, call it again with that prepare_id and approve true when the response has no PDF, then send the pdf_base64 it returns as document_base64. Draft mode accepts an untagged PDF (human places fields) or optional `fields`.\nzSign field placeholder syntax:\n- Format: {type:party:name} -- add * after the type to mark the field required, e.g. {signature*:signer}\n- On upload, a tag or PDF form field with no explicit required marker is required when the account's fields_required_by_default is true (the default) and optional when it is false; a * is always required. A JSON field list stores the required boolean you send (default false) and does not apply this setting.\n- Types: signature, initials, text, date, radio\n- party must exactly match the recipient's \"role\" value passed when sending (MCP default role is \"signer\")\n- name is optional for signature/initials/date and REQUIRED for text fields; letters, digits, and underscores only\n- radio fields take FOUR parts: {radio:party:group:option}. Every tag sharing a party and group forms one exclusive set -- the signer picks exactly one, and the chosen option is the value reported back. Mark the set required with {radio*:...} on any of its tags. group is letters/digits/underscores; option may also contain spaces and hyphens\n- radio tags must be visible text in the PDF body -- they cannot be the name of a PDF form field\n- Keep each tag on a single line in a standard font -- a tag split across lines is not detected\n- The tag's position in the document becomes the field's position; the signed value is drawn over it, and the tag itself is deleted when you upload -- signers never see it, and it is not in the completed document\n- Tags can be visible text in the PDF body, or the name of a PDF form field / annotation (except radio, which must be visible text)\nExamples: {signature*:signer}, {initials:signer}, {text*:signer:full_name}, {date:signer:signed_on}\nRadio (visible text only): {radio*:signer:plan:Option 1}, {radio*:signer:plan:Option 2}\nSample PDF: https://storage.googleapis.com/zsign-public/simple_contract_1.pdf\nDocs: https://zsign.io/docs/api\n\nmetadata is an optional flat object of string keys/values (max 50 keys) echoed back in every webhook for this envelope -- use it to carry your own record ids. Set revision_of to the source document_id to use its one-time free resend after changes are requested while the promotion is enabled.\n\nsequential (default true): recipients sign one at a time in list order. Set false so everyone can sign at once. Same flag as REST POST /api/v1/documents/send sequential.\n\ndocuments: list of `{filename, document_base64 | document_url, name?}` to send several PDFs as ONE envelope (one credit, shared recipients, one signing link per signer; at most 10). Mutually exclusive with document_base64/document_url. An encrypted or password-protected PDF is a 422 with code pdf_encrypted and is not charged.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "recipients": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Recipients"
+          },
+          "document_base64": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Document Base64"
+          },
+          "document_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Document Url"
+          },
+          "filename": {
+            "default": "document.pdf",
+            "title": "Filename",
+            "type": "string"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Name"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Metadata"
+          },
+          "send_invite": {
+            "default": true,
+            "title": "Send Invite",
+            "type": "boolean"
+          },
+          "send_completion_email": {
+            "default": true,
+            "title": "Send Completion Email",
+            "type": "boolean"
+          },
+          "sequential": {
+            "default": true,
+            "title": "Sequential",
+            "type": "boolean"
+          },
+          "auto_send": {
+            "default": true,
+            "title": "Auto Send",
+            "type": "boolean"
+          },
+          "draft": {
+            "default": false,
+            "title": "Draft",
+            "type": "boolean"
+          },
+          "fields": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Fields"
+          },
+          "documents": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Documents"
+          },
+          "prefill": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Prefill"
+          }
+        },
+        "title": "send_envelopeArguments"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "send_envelopeOutput"
+      },
+      "annotations": {
+        "title": "Send Envelope for Signature",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "prepare_document",
+      "title": "Prepare Document",
+      "description": "Place signature, initials, date, and printed-name fields on an untagged PDF. Provide document_base64 or an https document_url (max 10MB). Optional signers hints: [{\"name\", \"email\", \"role\", \"order\"}]. Until the user has approved one preview, every call returns status preview with confidence, reasons, fields, and prepare_id, and no PDF. Show it to the user, then call again with that prepare_id and approve true to get pdf_base64. A prepare_id expires 15 minutes after the preview; approve within that window or call prepare_document again. After that first approval, a call returns status ready and pdf_base64 when confidence is at least 0.85, and a preview otherwise. Creates no envelope and charges no credit. Radio and checkbox are not placed. A filled form field that is not a zSign tag is a 422 with code filled_form_field. Encrypted PDFs are refused. Flatten or clear filled form fields first, since zSign may not catch every one. An encrypted PDF is a 422 with code pdf_encrypted. An expired prepare_id is a 404 with code prepare_expired. An unknown prepare_id is a 404 with code prepare_not_found. Requires `Authorization: Bearer zs_...`.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "document_base64": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Document Base64"
+          },
+          "document_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Document Url"
+          },
+          "signers": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Signers"
+          },
+          "prepare_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Prepare Id"
+          },
+          "approve": {
+            "default": false,
+            "title": "Approve",
+            "type": "boolean"
+          }
+        },
+        "title": "prepare_documentArguments"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "prepare_documentOutput"
+      },
+      "annotations": {
+        "title": "Prepare Document",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "update_draft",
+      "title": "Update Draft Fields",
+      "description": "Replace the fields on an unsent Draft. No credit debit, no invites.\n    `fields` is a whole-list replace: [{type, party, name?, required,\n    position: {page_number, x, y, width, height}}]. Text fields may also\n    carry default_value (prefilled for the signer, who can edit it) and\n    locked=true (signer cannot edit; needs default_value; not allowed on\n    semantic_type \"full_name\"). Requires\n    `Authorization: Bearer zs_...`.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "title": "Document Id",
+            "type": "string"
+          },
+          "fields": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Fields",
+            "type": "array"
+          }
+        },
+        "required": [
+          "document_id",
+          "fields"
+        ],
+        "title": "update_draftArguments"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "update_draftOutput"
+      },
+      "annotations": {
+        "title": "Update Draft Fields",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": true
+      }
+    },
+    {
+      "name": "add_document_to_draft",
+      "title": "Add Document to Draft",
+      "description": "Append a document to an existing Draft. Provide exactly one of document_base64, document_url, or template_id. A multi-document template inserts ALL of its documents (each counts toward the limit of 10) and `name` is then not allowed. `role_mapping` (template only) maps the template's roles onto this envelope's roles, e.g. {\"customer\": \"client\"}; unmapped roles are inserted as-is, never guessed. Fields already placed keep their pages; inserted pages come after them. Returns the draft with its `documents[]` (page ranges) so you can place fields with `document_id` + document-relative page. Requires `Authorization: Bearer zs_...`.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "title": "Document Id",
+            "type": "string"
+          },
+          "filename": {
+            "default": "document.pdf",
+            "title": "Filename",
+            "type": "string"
+          },
+          "document_base64": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Document Base64"
+          },
+          "document_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Document Url"
+          },
+          "template_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Template Id"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Name"
+          },
+          "role_mapping": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Role Mapping"
+          }
+        },
+        "required": [
+          "document_id"
+        ],
+        "title": "add_document_to_draftArguments"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "add_document_to_draftOutput"
+      },
+      "annotations": {
+        "title": "Add Document to Draft",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "send_draft",
+      "title": "Send Draft",
+      "description": "Send a previously created Draft. Costs 1 credit. Recipients default\n    to those stored when the draft was created. After send, status is Sent\n    and invite emails fire (unless send_invite=false). sequential defaults\n    true (one at a time); set false for everyone at once. prefill =\n    {\"party:name\": \"text\"} sets or overrides text field defaults for this\n    send only; unknown or non-text keys are a 422 invalid_prefill_key. An\n    encrypted PDF stored on the draft is a 422 with code pdf_encrypted and\n    is not charged. Set metadata.revision_of to a changes-requested source\n    document_id for its one-time free resend while the promotion is enabled.\n    Requires `Authorization: Bearer zs_...`.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "title": "Document Id",
+            "type": "string"
+          },
+          "recipients": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Recipients"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Metadata"
+          },
+          "send_invite": {
+            "default": true,
+            "title": "Send Invite",
+            "type": "boolean"
+          },
+          "send_completion_email": {
+            "default": true,
+            "title": "Send Completion Email",
+            "type": "boolean"
+          },
+          "sequential": {
+            "default": true,
+            "title": "Sequential",
+            "type": "boolean"
+          },
+          "prefill": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Prefill"
+          }
+        },
+        "required": [
+          "document_id"
+        ],
+        "title": "send_draftArguments"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "send_draftOutput"
+      },
+      "annotations": {
+        "title": "Send Draft",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false
+      }
+    },
+    {
+      "name": "revise_envelope",
+      "title": "Revise Envelope",
+      "description": "Copy an envelope the signer requested changes on into a new unsent\n    Draft: same documents, fields, recipients and public metadata, plus\n    metadata.revision_of set to the source document_id. Wraps\n    POST /api/v1/documents/{document_id}/revise. Costs no credit. Read the\n    signer's comments with get_envelope_status, edit the Draft with\n    update_draft / add_document_to_draft, then call\n    send_draft(document_id=<the new draft's document_id>): revision_of is\n    carried, so the first qualifying revision is free while the promotion\n    is enabled. Errors: 404 if the envelope is missing or in another org;\n    409 not_changes_requested unless its newest session was declined with\n    a change request. Not idempotent: each call creates another Draft.\n    Requires `Authorization: Bearer zs_...`.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "title": "Document Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "document_id"
+        ],
+        "title": "revise_envelopeArguments"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "revise_envelopeOutput"
+      },
+      "annotations": {
+        "title": "Revise Envelope",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false
+      }
+    },
+    {
+      "name": "delete_draft",
+      "title": "Delete Draft",
+      "description": "Delete an unsent Draft entirely: the envelope, its documents, and the\n    stored PDF bytes. Wraps DELETE /api/v1/documents/drafts/{document_id}.\n    Use when a draft is abandoned -- there is no archive. Sent and completed\n    envelopes cannot be deleted (use void_envelope on a live send instead);\n    on one of those this returns the same 404 as a draft that never existed.\n    Requires `Authorization: Bearer zs_...`.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "title": "Document Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "document_id"
+        ],
+        "title": "delete_draftArguments"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "delete_draftOutput"
+      },
+      "annotations": {
+        "title": "Delete Draft",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": true
+      }
+    },
+    {
+      "name": "create_template",
+      "title": "Create Template",
+      "description": "Save an existing Draft as a reusable template. Mirrors dashboard\n    POST /api/documents/drafts/{id}/save-as-template (API-key twin\n    POST /api/v1/documents/drafts/{id}/save-as-template). There is no\n    blank-template flow — start from a Draft. Returns template_id and\n    role names. The Draft itself is unchanged. Requires\n    `Authorization: Bearer zs_...`.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "title": "Document Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "document_id",
+          "name"
+        ],
+        "title": "create_templateArguments"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "create_templateOutput"
+      },
+      "annotations": {
+        "title": "Create Template",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false
+      }
+    },
+    {
+      "name": "list_templates",
+      "title": "List Templates",
+      "description": "List saved templates in the caller's org. Returns template_id,\n    name, updated_at, and role names — enough to pick a template for\n    add_document_to_draft(template_id=...) or send_from_template.\n    Requires `Authorization: Bearer zs_...`.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "title": "list_templatesArguments"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "list_templatesOutput"
+      },
+      "annotations": {
+        "title": "List Templates",
+        "readOnlyHint": true,
+        "idempotentHint": true
+      }
+    },
+    {
+      "name": "send_from_template",
+      "title": "Send From Template",
+      "description": "First-class send from a saved template. Stamps a new Draft from\n    template_id (same service as dashboard draft-from-template), then\n    sends it. Costs 1 credit. recipients =\n    [{\"name\": \"...\", \"email\": \"...\", \"role\": \"signer\"}]. role_mapping\n    maps the template's roles onto recipient roles, e.g.\n    {\"customer\": \"client\"}; unmapped roles stay literal. This is the\n    send-from-template path — do not also pass template_id to\n    send_envelope. prefill = {\"party:name\": \"text\"} fills or overrides\n    the template's text defaults for this send only; the template itself\n    is unchanged. metadata.revision_of may name a changes-requested source\n    document_id for its one-time free resend while the promotion is enabled.\n    To compose a Draft without sending, keep using\n    add_document_to_draft(template_id=...). If send fails after the\n    stamp, the new draft is left in place and the error includes\n    `draft_id`. The stamp does not store recipients or send options —\n    retry with send_draft(document_id=draft_id, recipients=<same\n    recipients>) and repeat any metadata / send_invite /\n    send_completion_email / sequential, or discard that draft.\n    Requires `Authorization: Bearer zs_...`.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "template_id": {
+            "title": "Template Id",
+            "type": "string"
+          },
+          "recipients": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "title": "Recipients",
+            "type": "array"
+          },
+          "role_mapping": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Role Mapping"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Name"
+          },
+          "metadata": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Metadata"
+          },
+          "send_invite": {
+            "default": true,
+            "title": "Send Invite",
+            "type": "boolean"
+          },
+          "send_completion_email": {
+            "default": true,
+            "title": "Send Completion Email",
+            "type": "boolean"
+          },
+          "sequential": {
+            "default": true,
+            "title": "Sequential",
+            "type": "boolean"
+          },
+          "prefill": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Prefill"
+          }
+        },
+        "required": [
+          "template_id",
+          "recipients"
+        ],
+        "title": "send_from_templateArguments"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "send_from_templateOutput"
+      },
+      "annotations": {
+        "title": "Send From Template",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": true
+      }
+    },
+    {
+      "name": "list_envelopes",
+      "title": "List Envelopes",
+      "description": "Search the caller's envelopes. Optional filters: status (pending,\n    in_progress, completed, voided, declined, expired, cancelled, draft,\n    ready_to_send), q (name / filename / recipient / id substring),\n    date_from and date_to (ISO-8601, inclusive on created_at). limit max\n    50 (default 20). Includes unsent drafts unless status selects a\n    session status. Each item includes thin recipients[] (recipient_id,\n    email, name, status, can_remind) for remind_envelope, plus\n    document_id for get_envelope_status. Requires\n    `Authorization: Bearer zs_...`.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Status"
+          },
+          "q": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Q"
+          },
+          "limit": {
+            "default": 20,
+            "title": "Limit",
+            "type": "integer"
+          },
+          "offset": {
+            "default": 0,
+            "title": "Offset",
+            "type": "integer"
+          },
+          "date_from": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Date From"
+          },
+          "date_to": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Date To"
+          }
+        },
+        "title": "list_envelopesArguments"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "list_envelopesOutput"
+      },
+      "annotations": {
+        "title": "List Envelopes",
+        "readOnlyHint": true,
+        "idempotentHint": true
+      }
+    },
+    {
+      "name": "get_envelope_status",
+      "title": "Get Envelope Status",
+      "description": "Envelope progress: session status, per-recipient signing status, and —\n    once completed — the completed_document_id to pass to\n    download_signed_document. A changes-requested recipient includes\n    change_request.reason, comments (page/field/normalized anchors/text), and\n    timestamp; revision resends include session.revision_of. Requires\n    `Authorization: Bearer zs_...`.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "title": "Document Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "document_id"
+        ],
+        "title": "get_envelope_statusArguments"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "get_envelope_statusOutput"
+      },
+      "annotations": {
+        "title": "Get Envelope Status",
+        "readOnlyHint": true,
+        "idempotentHint": true
+      }
+    },
+    {
+      "name": "get_signing_links",
+      "title": "Get Signing Links",
+      "description": "Fetch recipient signing URLs for an already-sent envelope without\n    sending again. Output is the same `signing_urls` shape\n    send_envelope / send_draft / send_from_template return:\n    [{recipient_email, recipient_name, signing_url, token}].\n\n    Each signing_url / token authenticates as that recipient on\n    /sign/{token}, so this tool requires envelopes:send (same class as\n    send / remind), not envelopes:read.\n\n    These URLs are the ordinary agent-link. They are valid iframe\n    `signingUrl` values for `@zsign/embed` / `@zsign/react`. This tool\n    does not mint a second URL scheme and does not replace agent-link as\n    the default. Optional recipient_email keeps one recipient. Requires\n    `Authorization: Bearer zs_...`.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "title": "Document Id",
+            "type": "string"
+          },
+          "recipient_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Recipient Email"
+          }
+        },
+        "required": [
+          "document_id"
+        ],
+        "title": "get_signing_linksArguments"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "get_signing_linksOutput"
+      },
+      "annotations": {
+        "title": "Get Signing Links",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": true
+      }
+    },
+    {
+      "name": "remind_envelope",
+      "title": "Remind Envelope Recipient",
+      "description": "Send one signing reminder to a still-unsigned recipient.\n\n    Wraps POST /api/v1/documents/{document_id}/recipients/{recipient_id}/remind\n    — same policy as the dashboard Remind button and the cron sweep (cap,\n    spacing, sequential can_sign_now). REMINDERS_ENABLED does not apply.\n    Envelopes sent with send_invite=false are refused unless\n    override_send_invite is true. Not idempotent: each success increments\n    reminder_count, and a second call inside REMINDER_DELAY_HOURS is 429.\n    Requires `Authorization: Bearer zs_...`.\n    ",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "title": "Document Id",
+            "type": "string"
+          },
+          "recipient_id": {
+            "title": "Recipient Id",
+            "type": "string"
+          },
+          "override_send_invite": {
+            "default": false,
+            "title": "Override Send Invite",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "document_id",
+          "recipient_id"
+        ],
+        "title": "remind_envelopeArguments"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "remind_envelopeOutput"
+      },
+      "annotations": {
+        "title": "Remind Envelope Recipient",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false
+      }
+    },
+    {
+      "name": "correct_recipient_email",
+      "title": "Correct Recipient Email",
+      "description": "Correct the email of an unsigned recipient on an in-flight envelope.\n\n    Wraps POST /api/v1/documents/{document_id}/recipients/{recipient_id}/email.\n    Same recipient_id and signing link — does not void, so signatures already\n    collected from other recipients stay valid. Refuses a recipient who has\n    already signed (409 recipient_already_signed) and an envelope that is\n    voided, completed, declined, or expired. Sends a fresh invite when the\n    envelope was sent with invites enabled. Later remind_envelope calls go\n    to the new address. Requires `Authorization: Bearer zs_...`.\n    ",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "title": "Document Id",
+            "type": "string"
+          },
+          "recipient_id": {
+            "title": "Recipient Id",
+            "type": "string"
+          },
+          "email": {
+            "title": "Email",
+            "type": "string"
+          }
+        },
+        "required": [
+          "document_id",
+          "recipient_id",
+          "email"
+        ],
+        "title": "correct_recipient_emailArguments"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "correct_recipient_emailOutput"
+      },
+      "annotations": {
+        "title": "Correct Recipient Email",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false
+      }
+    },
+    {
+      "name": "void_envelope",
+      "title": "Void Envelope",
+      "description": "Void a sent envelope so it can no longer be signed.\n\n    Signing links stop working immediately and recipients who have not yet\n    signed are emailed. The send credit is returned only if nobody has\n    opened the envelope.\n    ",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "title": "Document Id",
+            "type": "string"
+          },
+          "reason": {
+            "default": "",
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "document_id"
+        ],
+        "title": "void_envelopeArguments"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "void_envelopeOutput"
+      },
+      "annotations": {
+        "title": "Void Envelope",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": true
+      }
+    },
+    {
+      "name": "download_signed_document",
+      "title": "Download Signed Document",
+      "description": "Download the sealed, signed PDF. Takes the completed_document_id from\n    get_envelope_status; the original document_id also works and resolves to\n    that document's most recent completed session. Returns the bytes as\n    `content_base64` with `content_type` from the HTTP response. PDF\n    responses also include `pdf_base64` (same bytes). Requires\n    `Authorization: Bearer zs_...`.\n\n    document_id: one of `documents[].id` from get_envelope_status to download\n    just that document (its pages plus the certificate pages — an extract;\n    the certificate hash identifies the full envelope). `format='zip'`:\n    every document as its own PDF in one archive (`application/zip`).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "completed_document_id": {
+            "title": "Completed Document Id",
+            "type": "string"
+          },
+          "document_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Document Id"
+          },
+          "format": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Format"
+          }
+        },
+        "required": [
+          "completed_document_id"
+        ],
+        "title": "download_signed_documentArguments"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "download_signed_documentOutput"
+      },
+      "annotations": {
+        "title": "Download Signed Document",
+        "readOnlyHint": true,
+        "idempotentHint": true
+      }
+    },
+    {
+      "name": "download_certificate",
+      "title": "Download Certificate",
+      "description": "Download the standalone Certificate of Signature PDF for a completed\n    envelope. Takes the original document_id from send_envelope /\n    get_envelope_status / list_envelopes (NOT completed_document_id).\n    Incomplete envelopes error. Returns the PDF as base64. Requires\n    `Authorization: Bearer zs_...`.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "title": "Document Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "document_id"
+        ],
+        "title": "download_certificateArguments"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "download_certificateOutput"
+      },
+      "annotations": {
+        "title": "Download Certificate",
+        "readOnlyHint": true,
+        "idempotentHint": true
+      }
+    },
+    {
+      "name": "get_audit_trail",
+      "title": "Get Audit Trail",
+      "description": "JSON audit trail for an envelope. Completed envelopes include the\n    persisted completion certificate; voided / declined / expired\n    envelopes return an on-the-fly trail with an empty certificate.\n    Still-active envelopes are not found. Takes the original document_id.\n    Requires `Authorization: Bearer zs_...`.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "title": "Document Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "document_id"
+        ],
+        "title": "get_audit_trailArguments"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "get_audit_trailOutput"
+      },
+      "annotations": {
+        "title": "Get Audit Trail",
+        "readOnlyHint": true,
+        "idempotentHint": true
+      }
+    },
+    {
+      "name": "list_comments",
+      "title": "List Comments",
+      "description": "List comment threads for the latest envelope session of a document.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "document_id": {
+            "title": "Document Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "document_id"
+        ],
+        "title": "list_commentsArguments"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "list_commentsOutput"
+      },
+      "annotations": {
+        "title": "List Comments",
+        "readOnlyHint": true,
+        "idempotentHint": true
+      }
+    },
+    {
+      "name": "reply_comment",
+      "title": "Reply to Comment",
+      "description": "Reply to a comment thread using an agent-authored comment.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "comment_id": {
+            "title": "Comment Id",
+            "type": "string"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "comment_id",
+          "text"
+        ],
+        "title": "reply_commentArguments"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "reply_commentOutput"
+      },
+      "annotations": {
+        "title": "Reply to Comment",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false
+      }
+    },
+    {
+      "name": "resolve_comment",
+      "title": "Resolve or Reopen Comment",
+      "description": "Resolve a comment thread, or reopen it when resolved is false.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "comment_id": {
+            "title": "Comment Id",
+            "type": "string"
+          },
+          "resolved": {
+            "default": true,
+            "title": "Resolved",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "comment_id"
+        ],
+        "title": "resolve_commentArguments"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "title": "Result",
+            "type": "string"
+          }
+        },
+        "required": [
+          "result"
+        ],
+        "title": "resolve_commentOutput"
+      },
+      "annotations": {
+        "title": "Resolve or Reopen Comment",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": true
+      }
+    }
+  ],
+  "resources": [],
+  "prompts": []
+}
