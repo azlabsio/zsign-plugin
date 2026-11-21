@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Security: `verifyWebhookRequest` takes the event id from the signed body
+  `id` only. It used to prefer the unsigned `X-Webhook-Id` header, so a
+  captured delivery replayed within the 300s window with a new header value
+  bypassed dedupe and was stored and applied again. A signed body without
+  `id` is now rejected with 400.
+
 ## 0.1.2 — 2026-09-21
 
 - Fix: the default API base URL was `https://api.zsign.io`, a host that does

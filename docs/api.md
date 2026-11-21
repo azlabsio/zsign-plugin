@@ -86,8 +86,9 @@ const res = await verifyWebhookRequest(request, [currentSecret, previousSecret])
 ```
 
 HMAC-SHA256 over `t.{raw_body}` vs `v1` in `X-Webhook-Signature`, 300s
-timestamp tolerance, timing-safe compare. Event id comes from `X-Webhook-Id`
-header, falling back to the body.
+timestamp tolerance, timing-safe compare. Event id comes from the signed body
+`id` only; `X-Webhook-Id` is not covered by the signature and is ignored. A
+body without `id` is rejected with 400.
 
 ### `onCompleted(ctx, handler, { limit? })` — action
 
@@ -140,8 +141,8 @@ registerZsign(t);  // mounts the component under name "zsign"
 
 ## Failure semantics
 
-- **Webhook receipt** — verify → dedupe → persist → apply. Unknown eventIds
-  dedupe by `X-Webhook-Id`. Unknown sessions persist as orphaned events and are
+- **Webhook receipt** — verify → dedupe → persist → apply. Events dedupe by the
+  signed body `id`. Unknown sessions persist as orphaned events and are
   re-applied (in arrival order) when the envelope row appears.
 - **Send** — operation allocated before the POST; network/5xx marks it
   `failed` (retryable by re-sending the same operationId); `sent` ops replay.

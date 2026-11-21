@@ -105,7 +105,7 @@ export default http;
 
 Verified signature (`X-Webhook-Signature: t=…,v1=…`, HMAC-SHA256 over
 `t.{raw_body}`, 300s tolerance, either current or previous secret) happens
-before any mutation; unknown `X-Webhook-Id`s are deduped; unknown sessions are
+before any mutation; events are deduped on the signed body `id`; unknown sessions are
 persisted as orphaned events and replayed onto the envelope if it appears
 later. A receipt failure returns 503 so zSign retries delivery.
 
@@ -159,7 +159,7 @@ local zSign backend (:7101, local Postgres + `local_gcs_uvicorn.py`), webhook
    `internalMutation` handler.
 4. **Artifacts** — signed PDF (tags redacted, signature stamped) and
    certificate both return bytes through component actions.
-5. **Signature verification** — good sig → applied; replayed `X-Webhook-Id` →
+5. **Signature verification** — good sig → applied; replayed event `id` →
    `"duplicate"`; bad sig / stale `t` → 401; `ZSIGN_WEBHOOK_SECRET_PREVIOUS`
    accepted.
 6. **Replay** — `send` twice with the same `operationId` → `{replayed: true,
