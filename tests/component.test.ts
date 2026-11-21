@@ -2,6 +2,10 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { convexTest } from "convex-test";
 import schema from "../src/component/schema.js";
 import { api, internal } from "../src/component/_generated/api.js";
+import {
+  hmacSha256Hex,
+  verifyWebhookRequest,
+} from "../src/component/webhook.js";
 
 // Test the component's own functions directly — convex-test resolves
 // `import.meta.glob` at build time for the component's modules.
@@ -56,6 +60,37 @@ describe("applyWebhookEvent", () => {
     const second = await t_.mutation(api.lib.applyWebhookEvent, event);
     expect(first).toEqual({ outcome: "applied" });
     expect(second).toEqual({ outcome: "duplicate" });
+    await t_.run(async (ctx) => {
+      const events = await ctx.db.query("events").collect();
+      expect(events).toHaveLength(1);
+    });
+  });
+
+  test("a replayed signed delivery with a new X-Webhook-Id is a duplicate", async () => {
+    const t_ = t();
+    await seedEnvelope(t_, { operationId: "op-1", sessionId: "sess-1" });
+    const secret = "whsec_test_secret";
+    const raw = JSON.stringify({
+      id: "evt-signed",
+      type: "document.viewed",
+      data: { session_id: "sess-1", signer_email: "signer@example.com" },
+    });
+    const ts = Math.floor(Date.now() / 1000);
+    const sig = `t=${ts},v1=${await hmacSha256Hex(secret, `${ts}.${raw}`)}`;
+    const deliver = async (webhookId: string) => {
+      const verified = await verifyWebhookRequest(
+        new Request("https://example.com/zsign/webhook", {
+          method: "POST",
+          headers: { "X-Webhook-Signature": sig, "X-Webhook-Id": webhookId },
+          body: raw,
+        }),
+        [secret],
+      );
+      if (!verified.ok) throw new Error(verified.error);
+      return t_.mutation(api.lib.applyWebhookEvent, verified.event);
+    };
+    expect(await deliver("delivery-1")).toEqual({ outcome: "applied" });
+    expect(await deliver("delivery-2")).toEqual({ outcome: "duplicate" });
     await t_.run(async (ctx) => {
       const events = await ctx.db.query("events").collect();
       expect(events).toHaveLength(1);

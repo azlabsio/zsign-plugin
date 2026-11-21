@@ -92,17 +92,21 @@ describe("verifyWebhookRequest", () => {
     expect(res.ok).toBe(true);
   });
 
-  test("header event id wins over body id; body id is the fallback", async () => {
+  test("event id comes from the signed body; X-Webhook-Id is ignored", async () => {
     const withHeader = await verifyWebhookRequest(
       await signedRequest(EVENT, { eventId: "delivery-9" }),
       [SECRET],
     );
-    expect(withHeader.ok && withHeader.event.eventId === "delivery-9").toBe(
-      true,
+    expect(withHeader.ok && withHeader.event.eventId === "evt_1").toBe(true);
+  });
+
+  test("rejects a signed body with no id even when X-Webhook-Id is set", async () => {
+    const { id: _id, ...noId } = EVENT;
+    const res = await verifyWebhookRequest(
+      await signedRequest(noId, { eventId: "delivery-9" }),
+      [SECRET],
     );
-    const fallback = await verifyWebhookRequest(await signedRequest(EVENT), [
-      SECRET,
-    ]);
-    expect(fallback.ok && fallback.event.eventId === "evt_1").toBe(true);
+    expect(res.ok).toBe(false);
+    if (!res.ok) expect(res.status).toBe(400);
   });
 });

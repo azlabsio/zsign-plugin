@@ -97,9 +97,10 @@ export async function verifyWebhookRequest(
     return { ok: false, status: 400, error: "invalid json" };
   }
   const data = (event.data ?? {}) as Record<string, unknown>;
+  // Dedupe key must come from the signed body: `X-Webhook-Id` is not covered
+  // by the HMAC, so a replayed delivery could carry any value there.
   const eventId =
-    request.headers.get("X-Webhook-Id") ??
-    (typeof event.id === "string" ? event.id : undefined);
+    typeof event.id === "string" && event.id.length > 0 ? event.id : undefined;
   if (!eventId || typeof event.type !== "string") {
     return { ok: false, status: 400, error: "missing event id or type" };
   }
