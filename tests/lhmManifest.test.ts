@@ -1,5 +1,7 @@
 import { describe, expect, test } from "vitest";
+import cursorManifest from "../.cursor-plugin/plugin.json";
 import manifest from "../lhm.plugin.json";
+import agentManifest from "../plugin.json";
 
 // LobeHub PluginCategory values (@lobehub/market-sdk).
 const categories = [
@@ -29,11 +31,13 @@ describe("lhm.plugin.json", () => {
     expect(manifest.version).toMatch(/^\d+\.\d+\.\d+$/);
   });
 
+  test("shares a version with the Agent Plugins and Cursor manifests", () => {
+    expect(agentManifest.version).toBe(manifest.version);
+    expect(cursorManifest.version).toBe(manifest.version);
+  });
+
   test("describes the remote zsign MCP server", () => {
-    expect(manifest.description).toBe(
-      "Send documents for e-signature from AI assistants, track signers, and download sealed, signed PDFs.",
-    );
-    expect(manifest.description).toHaveLength(99);
+    expect(manifest.description.length).toBeLessThanOrEqual(100);
     expect(manifest.cloudEndpoint).toBe("https://zsign.io/mcp");
     for (const url of [manifest.homepage, manifest.icon, manifest.authorUrl]) {
       expect(new URL(url).protocol).toBe("https:");

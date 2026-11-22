@@ -220,3 +220,16 @@ to overwrite an existing manifest, so it runs in a scratch directory.)
 Copy the generated `tools` into `lhm.plugin.json`, keep `cloudEndpoint` at
 `https://zsign.io/mcp`, and run `npm test`. After the first `lhm plugin publish`,
 `lhm plugin update` pushes later edits.
+
+The **Sync marketplace manifests** GitHub Action runs daily at 09:23 UTC or on
+manual dispatch from the default branch. It reads the latest official
+[MCP Registry entry](https://registry.modelcontextprotocol.io/v0/servers?search=io.zsign/zsign)
+for `io.zsign/zsign` and the live tool catalog from `/mcp/open`. After tests pass,
+it opens or updates one draft PR on the reserved
+`automation/marketplace-manifest-sync` branch with the LobeHub, Agent Plugins,
+and Cursor versions plus the LobeHub description and tools.
+
+Under **Settings → Actions → General**, enable **Allow GitHub Actions to create
+and approve pull requests** if needed. Review and merge the draft PR manually.
+After a sync PR merges, the workflow summary reminds maintainers to publish the
+LobeHub update manually.
