@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "zsign",
-  "version": "1.0.0",
+  "version": "1.0.4",
   "description": "The e-signature API built for agents. One curl to send, one call to pay. ESIGN/UETA. Prepaid credits, no seats. MCP at zsign.io/mcp.",
   "author": {
     "name": "zSign",

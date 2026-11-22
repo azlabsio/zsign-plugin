@@ -1,7 +1,7 @@
 {
   "identifier": "zsign",
   "name": "zsign",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Send documents for e-signature from AI assistants, track signers, and download sealed, signed PDFs.",
   "author": "azlabs",
   "authorUrl": "https://azlabs.io",
@@ -21,7 +21,7 @@
     {
       "name": "create_account",
       "title": "Create Account",
-      "description": "Create a zSign account and API key in one call. Email is optional.\n    The returned key starts with zs_live_; pass it as\n    `Authorization: Bearer <key>` on this MCP connection (or REST) for all\n    other tools. Unverified accounts stay at 0 credits (anonymous-abuse\n    guard). Pass an email, then POST /api/v1/email/verify with the mailed\n    token (or click the link) to receive the same starting credits as a\n    dashboard signup. After that, send_envelope works; buy_credits when you\n    need more.",
+      "description": "Create a zSign account and API key in one call. Email is optional.\n    The returned key starts with zs_live_; pass it as\n    `Authorization: Bearer <key>` on this MCP connection (or REST) for all\n    other tools. Unverified accounts stay at 0 credits (anonymous-abuse\n    guard). Pass an email, then POST /api/v1/email/verify with the mailed\n    token (or click the link) to receive the same starting credits as a\n    dashboard signup. After that, send_envelope works; buy_credits when you\n    need more. `source` is an optional attribution ref (a short slug). Omit\n    it and the account is created the same way as before. An invalid source\n    is ignored and does not block signup.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -48,6 +48,18 @@
             ],
             "default": null,
             "title": "Name"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Source"
           }
         },
         "title": "create_accountArguments"
@@ -265,7 +277,7 @@
     {
       "name": "send_envelope",
       "title": "Send Envelope for Signature",
-      "description": "Send a PDF for legally binding signature, or leave it as a Draft for a human to approve. Immediate send costs 1 credit. Provide the PDF either as document_base64 OR as a public https document_url (max 10MB). recipients = [{\"name\": \"...\", \"email\": \"...\", \"role\": \"signer\"}]. Each recipient gets a signing email; poll get_envelope_status for progress. Requires `Authorization: Bearer zs_...`.\n\nauto_send defaults true (existing one-tool send). Set auto_send=false or draft=true to create a Draft: status Draft, no credit debit, no invite emails. draft=true always wins if both flags are set. Then a human Approves/Sends in the dashboard, or call send_draft.\n\nImmediate send: the PDF is REJECTED unless it contains signing-field placeholder tags. For an untagged PDF (no zSign field tags), call prepare_document first to place the fields, call it again with that prepare_id and approve true when the response has no PDF, then send the pdf_base64 it returns as document_base64. Draft mode accepts an untagged PDF (human places fields) or optional `fields`.\nzSign field placeholder syntax:\n- Format: {type:party:name} -- add * after the type to mark the field required, e.g. {signature*:signer}\n- On upload, a tag or PDF form field with no explicit required marker is required when the account's fields_required_by_default is true (the default) and optional when it is false; a * is always required. A JSON field list stores the required boolean you send (default false) and does not apply this setting.\n- Types: signature, initials, text, date, radio\n- party must exactly match the recipient's \"role\" value passed when sending (MCP default role is \"signer\")\n- name is optional for signature/initials/date and REQUIRED for text fields; letters, digits, and underscores only\n- radio fields take FOUR parts: {radio:party:group:option}. Every tag sharing a party and group forms one exclusive set -- the signer picks exactly one, and the chosen option is the value reported back. Mark the set required with {radio*:...} on any of its tags. group is letters/digits/underscores; option may also contain spaces and hyphens\n- radio tags must be visible text in the PDF body -- they cannot be the name of a PDF form field\n- Keep each tag on a single line in a standard font -- a tag split across lines is not detected\n- The tag's position in the document becomes the field's position; the signed value is drawn over it, and the tag itself is deleted when you upload -- signers never see it, and it is not in the completed document\n- Tags can be visible text in the PDF body, or the name of a PDF form field / annotation (except radio, which must be visible text)\nExamples: {signature*:signer}, {initials:signer}, {text*:signer:full_name}, {date:signer:signed_on}\nRadio (visible text only): {radio*:signer:plan:Option 1}, {radio*:signer:plan:Option 2}\nSample PDF: https://storage.googleapis.com/zsign-public/simple_contract_1.pdf\nDocs: https://zsign.io/docs/api\n\nmetadata is an optional flat object of string keys/values (max 50 keys) echoed back in every webhook for this envelope -- use it to carry your own record ids. Set revision_of to the source document_id to use its one-time free resend after changes are requested while the promotion is enabled.\n\nsequential (default true): recipients sign one at a time in list order. Set false so everyone can sign at once. Same flag as REST POST /api/v1/documents/send sequential.\n\ndocuments: list of `{filename, document_base64 | document_url, name?}` to send several PDFs as ONE envelope (one credit, shared recipients, one signing link per signer; at most 10). Mutually exclusive with document_base64/document_url. An encrypted or password-protected PDF is a 422 with code pdf_encrypted and is not charged.",
+      "description": "Send a PDF for legally binding signature, or leave it as a Draft for a human to approve. Immediate send costs 1 credit. Provide the PDF either as document_base64 OR as a public https document_url (max 10MB). recipients = [{\"name\": \"...\", \"email\": \"...\", \"role\": \"signer\"}]. Each recipient gets a signing email; poll get_envelope_status for progress. Requires `Authorization: Bearer zs_...`.\n\nauto_send defaults true (existing one-tool send). Set auto_send=false or draft=true to create a Draft: status Draft, no credit debit, no invite emails. draft=true always wins if both flags are set. Then a human Approves/Sends in the dashboard, or call send_draft.\n\nImmediate send: the PDF is REJECTED unless it contains signing-field placeholder tags. For an untagged PDF (no zSign field tags), call prepare_document first to place the fields, call it again with that prepare_id and approve true when the response has no PDF, then send the pdf_base64 it returns as document_base64. Draft mode accepts an untagged PDF (human places fields) or optional `fields`.\nzSign field placeholder syntax:\n- Format: {type:party:name} -- add * after the type to mark the field required, e.g. {signature*:signer}\n- On upload, a tag or PDF form field with no explicit required marker is required when the account's fields_required_by_default is true (the default) and optional when it is false; a * is always required. A JSON field list stores the required boolean you send (default false) and does not apply this setting.\n- Types: signature, initials, text, date, radio\n- party must exactly match the recipient's \"role\" value passed when sending (MCP default role is \"signer\")\n- name is optional for signature/initials/date and REQUIRED for text fields; letters, digits, and underscores only\n- radio fields take FOUR parts: {radio:party:group:option}. Every tag sharing a party and group forms one exclusive set -- the signer picks exactly one, and the chosen option is the value reported back. Mark the set required with {radio*:...} on any of its tags. group is letters/digits/underscores; option may also contain spaces and hyphens\n- radio tags must be visible text in the PDF body -- they cannot be the name of a PDF form field\n- The signer sees each radio option's value as the caption beside its button, but the completed document only marks the chosen button -- print your own label next to each radio tag so the executed copy shows what each button means\n- Keep each tag on a single line in a standard font -- a tag split across lines is not detected\n- The tag's position in the document becomes the field's position; the signed value is drawn over it, and the tag itself is deleted when you upload -- signers never see it, and it is not in the completed document\n- Tags can be visible text in the PDF body, or the name of a PDF form field / annotation (except radio, which must be visible text)\nExamples: {signature*:signer}, {initials:signer}, {text*:signer:full_name}, {date:signer:signed_on}\nRadio (visible text only): {radio*:signer:plan:Option 1}, {radio*:signer:plan:Option 2}\nSample PDF: https://storage.googleapis.com/zsign-public/simple_contract_1.pdf\nDocs: https://zsign.io/docs/api\n\nmetadata is an optional flat object of string keys/values (max 50 keys) echoed back in every webhook for this envelope -- use it to carry your own record ids. Set revision_of to the source document_id to use its one-time free resend after changes are requested while the promotion is enabled.\n\nsequential (default true): recipients sign one at a time in list order. Set false so everyone can sign at once. Same flag as REST POST /api/v1/documents/send sequential.\n\ndocuments: list of `{filename, document_base64 | document_url, name?}` to send several PDFs as ONE envelope (one credit, shared recipients, one signing link per signer; at most 10). Mutually exclusive with document_base64/document_url. An encrypted or password-protected PDF is a 422 with code pdf_encrypted and is not charged.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -438,7 +450,7 @@
     {
       "name": "prepare_document",
       "title": "Prepare Document",
-      "description": "Place signature, initials, date, and printed-name fields on an untagged PDF. Provide document_base64 or an https document_url (max 10MB). Optional signers hints: [{\"name\", \"email\", \"role\", \"order\"}]. Until the user has approved one preview, every call returns status preview with confidence, reasons, fields, and prepare_id, and no PDF. Show it to the user, then call again with that prepare_id and approve true to get pdf_base64. A prepare_id expires 15 minutes after the preview; approve within that window or call prepare_document again. After that first approval, a call returns status ready and pdf_base64 when confidence is at least 0.85, and a preview otherwise. Creates no envelope and charges no credit. Radio and checkbox are not placed. A filled form field that is not a zSign tag is a 422 with code filled_form_field. Encrypted PDFs are refused. Flatten or clear filled form fields first, since zSign may not catch every one. An encrypted PDF is a 422 with code pdf_encrypted. An expired prepare_id is a 404 with code prepare_expired. An unknown prepare_id is a 404 with code prepare_not_found. Requires `Authorization: Bearer zs_...`.",
+      "description": "Place signature, initials, date, and printed-name fields on an untagged PDF. Provide document_base64 or an https document_url (max 10MB). Optional signers hints: [{\"name\", \"email\", \"role\", \"order\"}]. Until the user has approved one preview, every call returns status preview with confidence, reasons, fields, pages, and prepare_id, and no PDF. pages lists each page's visible area (x, y, width, height) in the same coordinates a field position uses. Show it to the user, then call again with that prepare_id and approve true to get pdf_base64. A prepare_id expires 15 minutes after the preview; approve within that window or call prepare_document again. After that first approval, a call returns status ready and pdf_base64 when confidence is at least 0.85, and a preview otherwise. Creates no envelope and charges no credit. Radio and checkbox are not placed. A filled form field that is not a zSign tag is a 422 with code filled_form_field. Encrypted PDFs are refused. Flatten or clear filled form fields first, since zSign may not catch every one. An encrypted PDF is a 422 with code pdf_encrypted. An expired prepare_id is a 404 with code prepare_expired. An unknown prepare_id is a 404 with code prepare_not_found. Requires `Authorization: Bearer zs_...`.",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -1254,7 +1266,7 @@
     {
       "name": "correct_recipient_email",
       "title": "Correct Recipient Email",
-      "description": "Correct the email of an unsigned recipient on an in-flight envelope.\n\n    Wraps POST /api/v1/documents/{document_id}/recipients/{recipient_id}/email.\n    Same recipient_id and signing link — does not void, so signatures already\n    collected from other recipients stay valid. Refuses a recipient who has\n    already signed (409 recipient_already_signed) and an envelope that is\n    voided, completed, declined, or expired. Sends a fresh invite when the\n    envelope was sent with invites enabled. Later remind_envelope calls go\n    to the new address. Requires `Authorization: Bearer zs_...`.\n    ",
+      "description": "Correct the email of an unsigned recipient on an in-flight envelope.\n\n    Wraps POST /api/v1/documents/{document_id}/recipients/{recipient_id}/email.\n    Same recipient_id; the signing credential rotates to the new address and\n    the previous address is notified — does not void, so signatures already\n    collected from other recipients stay valid. Refuses a recipient who has\n    already signed (409 recipient_already_signed) and an envelope that is\n    voided, completed, declined, or expired. Sends a fresh invite when the\n    envelope was sent with invites enabled. Later remind_envelope calls go\n    to the new address. Requires `Authorization: Bearer zs_...`.\n    ",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -1343,7 +1355,7 @@
     {
       "name": "download_signed_document",
       "title": "Download Signed Document",
-      "description": "Download the sealed, signed PDF. Takes the completed_document_id from\n    get_envelope_status; the original document_id also works and resolves to\n    that document's most recent completed session. Returns the bytes as\n    `content_base64` with `content_type` from the HTTP response. PDF\n    responses also include `pdf_base64` (same bytes). Requires\n    `Authorization: Bearer zs_...`.\n\n    document_id: one of `documents[].id` from get_envelope_status to download\n    just that document (its pages plus the certificate pages — an extract;\n    the certificate hash identifies the full envelope). `format='zip'`:\n    every document as its own PDF in one archive (`application/zip`).",
+      "description": "Download the sealed, signed PDF. Takes the completed_document_id from\n    get_envelope_status; the original document_id also works and resolves to\n    that document's most recent completed session. Returns the bytes as\n    `content_base64` with `content_type` from the HTTP response. PDF\n    responses also include `pdf_base64` (same bytes). MCP clients truncate\n    large tool responses, so for anything beyond a page or two prefer\n    `download_url`: a short-lived bearer URL (valid until\n    `download_url_expires_at`) that serves the same bytes with no\n    Authorization header — pass it to the user or fetch it directly.\n    Requires `Authorization: Bearer zs_...`.\n\n    document_id: one of `documents[].id` from get_envelope_status to download\n    just that document (its pages plus the certificate pages — an extract;\n    the certificate hash identifies the full envelope). `format='pdf'` (the\n    default) returns the combined signed PDF; `format='zip'`: every document\n    as its own PDF in one archive (`application/zip`).",
       "inputSchema": {
         "type": "object",
         "properties": {
@@ -1396,7 +1408,8 @@
       },
       "annotations": {
         "title": "Download Signed Document",
-        "readOnlyHint": true,
+        "readOnlyHint": false,
+        "destructiveHint": false,
         "idempotentHint": true
       }
     },
